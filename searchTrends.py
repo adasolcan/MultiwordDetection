@@ -20,9 +20,10 @@ with open('trends.txt', 'w') as stream:
     stream.write("\n".join(trends_names))
 
 tweets = []
+max_tweets = 200
 for i, query in enumerate(trends_querys):
     print("Getting trend {0}/{1}".format(i+1, len(trends_querys)))
-    tweets += [tweet.text for tweet in api.search(q=query, count=100, language='en')]
+    tweets += [status.text for status in tweepy.Cursor(api.search, q=query, language='en').items(max_tweets)]
 
 with open('tweets.txt', 'w') as stream:
     stream.write("\n".join(tweets))
