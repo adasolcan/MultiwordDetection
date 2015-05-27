@@ -1,62 +1,28 @@
-from TwitterSearch import *
-import twitter 
-import re
-import collections
-import csv
+import tweepy
 
-try:
-    keys = []
-    f = open('keys.txt', 'r')
-    for key in f:
-        keys.append(key.rstrip())
-    print keys
+keys = []
+with open('keys.txt') as stream:
+    keys = [line.strip() for line in stream]
+[consumer_key, consumer_secret, access_token, access_token_secret] = keys
 
-    CONSUMER_KEY = keys[0]
-    CONSUMER_SECRET = keys[1]
-    OAUTH_TOKEN = keys[2]
-    OAUTH_SECRET = keys[3]
 
-    twitter = twitter.Twitter(auth = twitter.OAuth(OAUTH_TOKEN, OAUTH_SECRET,
-                                            CONSUMER_KEY, CONSUMER_SECRET))
-    results = twitter.trends.place(_id = 23424977)
-    trendList = []
-    for location in results:
-            for trend in location["trends"]:
-                        trendList.append(trend["name"])
-    
-    trendList = trendList[:5]
-    print trendList
+auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+auth.set_access_token(access_token, access_token_secret)
+api = tweepy.API(auth)  
 
-    f = open('trends.txt', 'w')
-    for trend in trendList:
-        f.write(trend)
-        f.write('\n')
-    f.close()
+US_WOEID = '23424977'
 
-    tso = TwitterSearchOrder() 
-    tso.set_language('en')
-    tso.set_include_entities(False) 
+response = api.trends_place(id=US_WOEID)
+trends_querys = [x['query'] for x in response[0]['trends']]
+trends_names = [x['name'] for x in response[0]['trends']]
 
-    f = open('tweets.txt', 'w')
+with open('trends.txt', 'w') as stream:
+    stream.write("\n".join(trends_names))
 
-    for trend in trendList:    
-        tso.set_keywords([trend]) 
+tweets = []
+for i, query in enumerate(trends_querys):
+    print("Getting trend {0}/{1}".format(i+1, len(trends_querys)))
+    tweets += [tweet.text for tweet in api.search(q=query, count=100, language='en')]
 
-        ts = TwitterSearch(
-            consumer_key = CONSUMER_KEY,
-            consumer_secret = CONSUMER_SECRET,
-            access_token = OAUTH_TOKEN,
-            access_token_secret = OAUTH_SECRET
-        )
-
-    
-        for tweet in ts.search_tweets_iterable(tso):
-            print(tweet['text'])
-            f.write (tweet['text'].encode('utf-8'))
-            f.write ('\n')
-
-    f.close()
-
-except TwitterSearchException as e: 
-    print(e)
-
+with open('tweets.txt', 'w') as stream:
+    stream.write("\n".join(tweets))
