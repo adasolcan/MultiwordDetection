@@ -15,8 +15,7 @@ while i<len(token_list_temp):
   token_list.append(token_list_temp[i:i+2])
   i+=3
 
-words = ['']
-dict_word = collections.defaultdict(int)
+dict_multiword = collections.defaultdict(int)
 
 tweet1 = ''
 for group in token_list:
@@ -37,31 +36,28 @@ for group in token_list:
             tag = tags[i]
             if tag == "N" or tag == "^":
                 if tag1 in ["N", "^", "A", "V"]:
-                    pair = word1 + " " + word
-                    dict_word[pair]+=1
+                    multiword = word1 + " " + word
+                    dict_multiword[multiword]+=1
                 if (tag1 in ["N", "^", "A"]) and (tag2 in ["N", "^", "A"]):
-                    pair = word2 + " " + word1 + " " + word
-                    dict_word[pair]+=1
+                    multiword = word2 + " " + word1 + " " + word
+                    dict_multiword[multiword]+=1
                 if (tag1 in ["P"]) and (tag2 in ["N", "^"]):
-                    pair = word2 + " " + word1 + " " + word
-                    dict_word[pair]+=1
+                    multiword = word2 + " " + word1 + " " + word
+                    dict_multiword[multiword]+=1
             if tag == "V":
                 if tag1 in ["N", "^", "R"]:
-                    pair = word1 + " " + word
-                    dict_word[pair]+=1
+                    multiword = word1 + " " + word
+                    dict_multiword[multiword]+=1
             word2 = word1
             tag2 = tag1
             word1 = word
             tag1 = tag
     tweet1 = tweet
 
-f.close()
-# print(dict_word.items())
-
-ordered_dict_word = collections.OrderedDict(sorted(dict_word.items(), key=lambda t: t[1], reverse=True))
+ordered_dict_multiword = collections.OrderedDict(sorted(dict_multiword.items(), key=lambda t: t[1], reverse=True))
 # print(ordered_dict_word.items())
 
 w = csv.writer(open("dictionaryPair.csv", "w"))
-for key, val in ordered_dict_word.items():
+for key, val in ordered_dict_multiword.items():
     if val > 1:
          w.writerow([key, val])
