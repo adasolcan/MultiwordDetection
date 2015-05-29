@@ -2,6 +2,7 @@ import re
 import collections
 import csv
 import subprocess
+import json
 
 input_file = 'tweets_trends.txt'
 
@@ -24,6 +25,7 @@ multiword_patterns = [["N", "N"], ["A", "S"], ["V", "N"],
                     ["A", "N", "P", "N", "N", "N", "P", "N"]]
 
 tweet1 = ''
+words_total = 0
 for group in token_list:
     if len(group) == 2:
         tweet = group[0]
@@ -33,8 +35,10 @@ for group in token_list:
         tags = tag.split()
         word1 = ""
         word2 = ""
+        word3 = ""
         tag1 = ""
         tag2 = ""
+        tag3 = ""
         pair = ""
         for i in range(0, len(words)-1):
             word = words[i].lower()
@@ -42,6 +46,7 @@ for group in token_list:
 
             if tag in ["N", "A", "V", "R", "P"]:
                 dict_word[word] += 1
+                words_total += 1
 
             if [tag1, tag] in multiword_patterns:
                 multiword = word1 + " " + word
@@ -50,6 +55,12 @@ for group in token_list:
                 multiword = word2 + " " + word1 + " " + word
                 dict_multiword[multiword] += 1
 
+            if [tag3, tag2, tag1, tag] in multiword_patterns:
+                multiword = word3 + " " + word2 + " " + word1 + " " + word
+                dict_multiword[multiword] += 1
+
+            word3 = word2
+            tag3 = tag2
             word2 = word1
             tag2 = tag1
             word1 = word
@@ -64,18 +75,14 @@ for key, val in dict_multiword.items():
     for word in words:
         dict_multiword_score[key] -= dict_word[word]
 
-
-ordered_dict_multiword = collections.OrderedDict(sorted(dict_multiword.items(), key=lambda t: t[1], reverse=True))
-ordered_dict_word = collections.OrderedDict(sorted(dict_word.items(), key=lambda t: t[1], reverse=True))
 ordered_dict_multiword_score = collections.OrderedDict(sorted(dict_multiword_score.items(), key=lambda t: t[1], reverse=True))
 
-w = csv.writer(open("dictionaryMultiword.csv", "w"))
-for key, val in ordered_dict_multiword_score.items():
-    #if val > 1:
-    w.writerow([key, val])
-
-
-w = csv.writer(open("dictionaryWord.csv", "w"))
-for key, val in ordered_dict_word.items():
-    if val > 1:
-         w.writerow([key, val])
+with open("dictionaryMultiword.json", "w") as outfile:
+    json_data = []
+    for key, val in ordered_dict_multiword_score.items():
+        words = key.split()
+        json_obj = {'multiword':key, 'score':val, 'no_app':dict_multiword[key]}
+        for word in words:
+            json_obj[word+" no_app"] = dict_word[word] - dict_multiword[key]
+        json_data.append(json_obj)
+    json.dump(json_data, outfile, indent=4)
