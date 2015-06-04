@@ -5,7 +5,7 @@ import json
 
 from langdetect import detect
 
-input_file = 'tweets_trends.txt'
+input_file = 'tweets_trends2June.txt'
 
 p = subprocess.Popen(["../ark-tweet-nlp-0.3.2/runTagger.sh", "--no-confidence", "--output-format", "pretsv", "--quiet", input_file], stdout=subprocess.PIPE)
 (output, err) = p.communicate()
