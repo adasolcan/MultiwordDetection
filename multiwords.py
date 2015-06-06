@@ -7,7 +7,7 @@ from langdetect import detect
 
 input_file = 'tweets_trends2June.txt'
 
-p = subprocess.Popen(["../ark-tweet-nlp-0.3.2/runTagger.sh", "--no-confidence", "--output-format", "pretsv", "--quiet", input_file], stdout=subprocess.PIPE)
+p = subprocess.Popen(["../ark-tweet-nlp-0.3.2/runTagger.sh", "--no-confidence", "--input-format", "text", "--output-format", "pretsv", "--quiet", input_file], stdout=subprocess.PIPE)
 (output, err) = p.communicate()
 token_list_temp = re.sub("\n", "\t", output.decode()).split("\t")
 
@@ -16,9 +16,6 @@ token_list=[]
 while i<len(token_list_temp):
 	token_list.append(token_list_temp[i:i+2])
 	i+=3
-
-dict_multiword = collections.defaultdict(int)
-dict_word = collections.defaultdict(int)
 
 multiword_patterns = [["N", "V"], ["^", "^"], ["N", "^"], ["^", "N"], ["N", "N"],
 					["A", "N"], ["A", "^"], ["V", "N"], ["V", "^"], ["V", "T"],
@@ -35,6 +32,9 @@ multiword_patterns = [["N", "V"], ["^", "^"], ["N", "^"], ["^", "N"], ["N", "N"]
 					["N", "P", "D", "N"], ["^", "P", "D", "N"], ["N", "P", "D", "^"], ["^", "P", "D", "^"],
 					["N", "P", "N", "N"], ["^", "P", "N", "N"], ["N", "P", "^", "N"], ["N", "P", "N", "^"], ["N", "P", "^", "^"], ["^", "P", "N", "^"], ["^", "P", "^", "N"], ["^", "P", "^", "^"],
 					["N", "N", "P", "N"], ["N", "N", "P", "^"], ["N", "^", "P", "N"], ["^", "N", "P", "N"], ["^", "^", "P", "N"], ["^", "N", "P", "^"], ["N", "^", "P", "^"], ["^", "^", "P", "^"]]
+
+dict_multiword = collections.defaultdict(int)
+dict_word = collections.defaultdict(int)
 
 tweet1 = ''
 words_total = 0
