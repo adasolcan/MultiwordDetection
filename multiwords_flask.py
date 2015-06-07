@@ -31,35 +31,35 @@ def get_trends():
 
     response = api.trends_place(id=US_WOEID)
     trends_names = [x['name'] for x in response[0]['trends']]
-    #return render_template('trends.html', trends = trends_names)
     return json.dumps(trends_names)
 
 @app.route('/search_trends', methods=['GET', 'POST'])
 def search_trends():
-    # keys = []
-    # with open('keys.txt') as stream:
-    #     keys = [line.strip() for line in stream]
-    # [consumer_key, consumer_secret, access_token, access_token_secret] = keys
+    keys = []
+    with open('keys.txt') as stream:
+        keys = [line.strip() for line in stream]
+    [consumer_key, consumer_secret, access_token, access_token_secret] = keys
 
-    # auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    # auth.set_access_token(access_token, access_token_secret)
-    # api = tweepy.API(auth)
+    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+    auth.set_access_token(access_token, access_token_secret)
+    api = tweepy.API(auth)
 
-    # trends_querys = request.form['data']
+    trends_querys = request.form['data']
+    print(trends_querys)
 
-    # trends_querys = json.loads(trends_querys)
-    # tweets = []
-    # max_tweets = 200
-    # for i, query in enumerate(trends_querys):
-    #     print("Getting trend {0}/{1}".format(i+1, len(trends_querys)))
-    #     tweets += [status.text for status in tweepy.Cursor(api.search, q=query, language='en').items(max_tweets)]
+    trends_querys = json.loads(trends_querys)
+    tweets = []
+    max_tweets = 200
+    for i, query in enumerate(trends_querys):
+        print("Getting trend {0}/{1}".format(i+1, len(trends_querys)))
+        tweets += [status.text for status in tweepy.Cursor(api.search, q=query, language='en').items(max_tweets)]
         
-    # with open('tweets.txt', 'w') as stream:
-    #     stream.write("\n".join(tweets))
+    with open('tweets.txt', 'w') as stream:
+        stream.write("\n".join(tweets))
 
     input_file = 'tweets.txt'
 
-    p = subprocess.Popen(["../ark-tweet-nlp-0.3.2/runTagger.sh", "--no-confidence", "--output-format", "pretsv", "--quiet", input_file], stdout=subprocess.PIPE)
+    p = subprocess.Popen(["../ark-tweet-nlp-0.3.2/runTagger.sh", "--no-confidence", "--input-format", "text", "--output-format", "pretsv", "--quiet", input_file], stdout=subprocess.PIPE)
     (output, err) = p.communicate()
     token_list_temp = re.sub("\n", "\t", output.decode()).split("\t")
 
@@ -68,9 +68,6 @@ def search_trends():
     while i<len(token_list_temp):
         token_list.append(token_list_temp[i:i+2])
         i+=3
-
-    dict_multiword = collections.defaultdict(int)
-    dict_word = collections.defaultdict(int)
 
     multiword_patterns = [["N", "V"], ["^", "^"], ["N", "^"], ["^", "N"], ["N", "N"],
                     ["A", "N"], ["A", "^"], ["V", "N"], ["V", "^"], ["V", "T"],
@@ -87,6 +84,9 @@ def search_trends():
                     ["N", "P", "D", "N"], ["^", "P", "D", "N"], ["N", "P", "D", "^"], ["^", "P", "D", "^"],
                     ["N", "P", "N", "N"], ["^", "P", "N", "N"], ["N", "P", "^", "N"], ["N", "P", "N", "^"], ["N", "P", "^", "^"], ["^", "P", "N", "^"], ["^", "P", "^", "N"], ["^", "P", "^", "^"],
                     ["N", "N", "P", "N"], ["N", "N", "P", "^"], ["N", "^", "P", "N"], ["^", "N", "P", "N"], ["^", "^", "P", "N"], ["^", "N", "P", "^"], ["N", "^", "P", "^"], ["^", "^", "P", "^"]]
+
+    dict_multiword = collections.defaultdict(int)
+    dict_word = collections.defaultdict(int)
 
     tweet1 = ''; words_total = 0
     for group in token_list:
@@ -132,13 +132,15 @@ def search_trends():
 
     for key, val in dict_multiword.items():
         words = key.split()
-        dict_multiword_score[key] = val
+        score = val
         for word in words:
             if word in dict_word:
-                dict_multiword_score[key] -= dict_word[word] - val
+                score -= dict_word[word] - val
+        if score > 5:
+            dict_multiword_score[key] = score
 
     ordered_dict_multiword_score = collections.OrderedDict(sorted(dict_multiword_score.items(), key=lambda t: t[1], reverse=True))
-    return render_template('multiwords.html', ordered_dict_multiword_score = ordered_dict_multiword_score)
+    return json.dumps(ordered_dict_multiword_score)
 
 if __name__ == '__main__':
     app.debug = True
