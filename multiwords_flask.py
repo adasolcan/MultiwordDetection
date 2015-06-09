@@ -52,14 +52,17 @@ def search_trends():
     max_tweets = 200
     for i, query in enumerate(trends_querys):
         print("Getting trend {0}/{1}".format(i+1, len(trends_querys)))
-        tweets += [status.text for status in tweepy.Cursor(api.search, q=query, language='en').items(max_tweets)]
+        tweets += [status.text for status in tweepy.Cursor(api.search, q=query, 
+            language='en').items(max_tweets)]
         
     with open('tweets.txt', 'w') as stream:
         stream.write("\n".join(tweets))
 
     input_file = 'tweets.txt'
 
-    p = subprocess.Popen(["../ark-tweet-nlp-0.3.2/runTagger.sh", "--no-confidence", "--input-format", "text", "--output-format", "pretsv", "--quiet", input_file], stdout=subprocess.PIPE)
+    p = subprocess.Popen(["../ark-tweet-nlp-0.3.2/runTagger.sh",
+        "--no-confidence", "--input-format", "text", "--output-format",
+         "pretsv", "--quiet", input_file], stdout=subprocess.PIPE)
     (output, err) = p.communicate()
     token_list_temp = re.sub("\n", "\t", output.decode()).split("\t")
 
@@ -69,21 +72,38 @@ def search_trends():
         token_list.append(token_list_temp[i:i+2])
         i+=3
 
-    multiword_patterns = [["N", "V"], ["^", "^"], ["N", "^"], ["^", "N"], ["N", "N"],
+    multiword_patterns = [["N", "V"], ["^", "^"], ["N", "^"], ["^", "N"],
+                    ["N", "N"],
                     ["A", "N"], ["A", "^"], ["V", "N"], ["V", "^"], ["V", "T"],
                     ["N", "V"], ["^", "V"], ["R" , "V"],
-                    ["V", "T", "T"], ["V", "T", "P"], ["V", "D", "N"], ["V", "D", "^"],
-                    ["N", "O", "N"], ["^", "O", "N"], ["N", "O", "^"], ["^", "O", "^"],
-                    ["D", "D", "N"], ["D", "D", "^"], ["V", "D", "N"], ["V", "D", "^"], ["V", "T", "P"],
-                    ["N", "N", "N"], ["N", "N", "^"], ["N", "^", "N"], ["^", "N", "N"], ["N", "^", "^"], ["^", "N", "^"], ["^", "^", "N"], ["^", "^", "^"],
-                    ["A", "N", "N"], ["A", "N", "^"], ["A", "^", "N"], ["A", "^", "^"],
-                    ["N", "A", "N"], ["^", "A", "^"], ["N", "A","^"], ["^", "A", "N"],
+                    ["V", "T", "T"], ["V", "T", "P"], ["V", "D", "N"],
+                    ["V", "D", "^"],
+                    ["N", "O", "N"], ["^", "O", "N"], ["N", "O", "^"],
+                    ["^", "O", "^"],
+                    ["D", "D", "N"], ["D", "D", "^"], ["V", "D", "N"],
+                    ["V", "D", "^"], ["V", "T", "P"],
+                    ["N", "N", "N"], ["N", "N", "^"], ["N", "^", "N"],
+                    ["^", "N", "N"], ["N", "^", "^"], ["^", "N", "^"],
+                    ["^", "^", "N"], ["^", "^", "^"],
+                    ["A", "N", "N"], ["A", "N", "^"], ["A", "^", "N"],
+                    ["A", "^", "^"],
+                    ["N", "A", "N"], ["^", "A", "^"], ["N", "A","^"],
+                    ["^", "A", "N"],
                     ["A", "A", "N"], ["A", "A", "^"],
-                    ["N", "P", "N"], ["^", "P", "N"], ["N", "P", "^"], ["^", "P", "^"],
-                    ["N", "P", "A", "N"], ["^", "P", "A", "N"], ["N", "P", "A", "^"], ["^", "P", "A", "^"],
-                    ["N", "P", "D", "N"], ["^", "P", "D", "N"], ["N", "P", "D", "^"], ["^", "P", "D", "^"],
-                    ["N", "P", "N", "N"], ["^", "P", "N", "N"], ["N", "P", "^", "N"], ["N", "P", "N", "^"], ["N", "P", "^", "^"], ["^", "P", "N", "^"], ["^", "P", "^", "N"], ["^", "P", "^", "^"],
-                    ["N", "N", "P", "N"], ["N", "N", "P", "^"], ["N", "^", "P", "N"], ["^", "N", "P", "N"], ["^", "^", "P", "N"], ["^", "N", "P", "^"], ["N", "^", "P", "^"], ["^", "^", "P", "^"]]
+                    ["N", "P", "N"], ["^", "P", "N"], ["N", "P", "^"],
+                    ["^", "P", "^"],
+                    ["N", "P", "A", "N"], ["^", "P", "A", "N"],
+                    ["N", "P", "A", "^"], ["^", "P", "A", "^"],
+                    ["N", "P", "D", "N"], ["^", "P", "D", "N"],
+                    ["N", "P", "D", "^"], ["^", "P", "D", "^"],
+                    ["N", "P", "N", "N"], ["^", "P", "N", "N"],
+                    ["N", "P", "^", "N"], ["N", "P", "N", "^"],
+                    ["N", "P", "^", "^"], ["^", "P", "N", "^"],
+                    ["^", "P", "^", "N"], ["^", "P", "^", "^"],
+                    ["N", "N", "P", "N"], ["N", "N", "P", "^"],
+                    ["N", "^", "P", "N"], ["^", "N", "P", "N"],
+                    ["^", "^", "P", "N"], ["^", "N", "P", "^"],
+                    ["N", "^", "P", "^"], ["^", "^", "P", "^"]]
 
     dict_multiword = collections.defaultdict(int)
     dict_word = collections.defaultdict(int)
@@ -139,7 +159,8 @@ def search_trends():
         if score > 5:
             dict_multiword_score[key] = score
 
-    ordered_dict_multiword_score = collections.OrderedDict(sorted(dict_multiword_score.items(), key=lambda t: t[1], reverse=True))
+    ordered_dict_multiword_score = collections.OrderedDict(
+        sorted(dict_multiword_score.items(), key=lambda t: t[1], reverse=True))
     return json.dumps(ordered_dict_multiword_score)
 
 if __name__ == '__main__':
