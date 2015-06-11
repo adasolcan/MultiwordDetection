@@ -42,6 +42,7 @@ def search_trends():
     tweets = []
     if request.files.get('file'):
         tweets = [x.decode().strip() for x in request.files['file'].stream.readlines()]
+        tweets_file = 'tweets_upload.txt'
     else:
         keys = []
         with open('keys.txt') as stream:
@@ -57,21 +58,24 @@ def search_trends():
 
         trends_querys = json.loads(trends_querys)
         tweets = []
-        max_tweets = 200
-        for i, query in enumerate(trends_querys):
-            print("Getting trend {0}/{1}".format(i+1, len(trends_querys)))
-            tweets += [status.text for status in tweepy.Cursor(api.search, q=query, 
-                language='en').items(max_tweets)]
-    
+        max_tweets = 50
+        try:
+            for i, query in enumerate(trends_querys):
+                print("Getting trend {0}/{1}".format(i+1, len(trends_querys)))
+                tweets += [status.text for status in tweepy.Cursor(api.search, q=query, 
+                    language='en').items(max_tweets)]
+        except:
+            tweets = ''
 
-    with open('tweets.txt', 'w') as stream:
-        stream.write("\n".join(tweets))
+        tweets_file = 'tweets_trends.txt'
 
-    input_file = 'tweets.txt'
+    if tweets != '':
+        with open(tweets_file, 'w') as stream:
+            stream.write("\n".join(tweets))
 
     p = subprocess.Popen(["../ark-tweet-nlp-0.3.2/runTagger.sh",
         "--no-confidence", "--input-format", "text", "--output-format",
-         "pretsv", "--quiet", input_file], stdout=subprocess.PIPE)
+         "pretsv", "--quiet", tweets_file], stdout=subprocess.PIPE)
     (output, err) = p.communicate()
     token_list_temp = re.sub("\n", "\t", output.decode()).split("\t")
 

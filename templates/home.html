@@ -26,7 +26,7 @@
 		    margin-right:auto;
 		}
 		.row {
-			margin-top: 69px;
+			margin-top: 10px;
 		}
 	</style>
   </head>
@@ -37,7 +37,7 @@
 	</div>
 	<div class="row">
 		<div class="col-md-6">
-			<button type="button" class="btn btn-primary" id="trends_button">Trends</button><br>
+			<button type="button" class="btn btn-default" id="trends_button">Get Twitter trends</button><br>
 			<img src="/static/spinner.gif" id="spinner1" style="display:none">
 		</div>
 		<div class="col-md-6">
@@ -50,15 +50,16 @@
 					</div>
 				</div>
 				<div class="form-group">
-			        <button id="upload-file-btn" type="button" class="btn btn-default">Upload</button>
+			        <button id="upload-file-btn" type="button" class="btn btn-default">Upload & find multiwords</button>
+			        <img src="/static/spinner.gif" id="spinner2" style="display:none">
 			    </div>
 			</form>
 		</div>
 	</div>
 	<div class="row">
 		<table id="trends_table"></table>
-		<button class="btn btn-primary" id="search_button" style="display:none"> Search Trends</button><br>
-		<img src="/static/spinner.gif" id="spinner2" style="display:none">
+		<button class="btn btn-primary" id="search_button" style="display:none">Find multiwords</button><br>
+		<img src="/static/spinner.gif" id="spinner3" style="display:none">
 		<table id="multiwords_table"></table>
 	</div>
 
@@ -80,10 +81,15 @@
 				$('#multiwords_table').append($tr)
 			})
 			$('#spinner2').css('display', 'none')
+			$('#spinner3').css('display', 'none')
 		}
 
 		$(function() {
 			$('#upload-file-btn').click(function() {
+				$('#spinner2').css('display', 'inline')
+				$('#trends_table').html('')
+				$('#multiwords_table').html('')
+				$('#search_button').css('display', 'none')
 				var form_data = new FormData($('#upload-file')[0]);
 		        $.ajax({
 		            type: 'POST',
@@ -100,6 +106,7 @@
 
 		$("#trends_button").click(function() {
 			$('#trends_table').html('')
+			$('#multiwords_table').html('')
 			$('#search_button').css('display', 'none')
 			$('#spinner1').css('display', 'inline')
 			$.get("/trends", function(data) {
@@ -117,7 +124,7 @@
 		})
 
 		$("#search_button").click(function() {
-			$('#spinner2').css('display', 'inline')
+			$('#spinner3').css('display', 'inline')
 			$.post('/search_trends', {'data': JSON.stringify(trends)}, multiwordsSuccess)
 		})
 	</script>
