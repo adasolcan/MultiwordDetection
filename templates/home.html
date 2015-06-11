@@ -7,41 +7,97 @@
 	<meta charset="utf-8">
 	<meta http-equiv="X-UA-Compatible" content="IE=edge">
 	<meta name="viewport" content="width=device-width, initial-scale=1">
-	<!-- The above 3 meta tags *must* come first in the head; any other head content must come *after* these tags -->
+	
 	<title>Multiwords</title>
 
 	<!-- Bootstrap -->
-	<link href=""https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"" rel="stylesheet">
+	<link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css" rel="stylesheet">
+	<link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css">
 
-	<!-- HTML5 shim and Respond.js for IE8 support of HTML5 elements and media queries -->
-	<!-- WARNING: Respond.js doesn't work if you view the page via file:// -->
-	<!--[if lt IE 9]>
-	  <script src="https://oss.maxcdn.com/html5shiv/3.7.2/html5shiv.min.js"></script>
-	  <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script>
-	<![endif]-->
+	
 	<style>
 		body {
 			margin: 0 auto;
 			width: 800px;
+			text-align: center;
+		}
+		table {
+		    margin-left:auto; 
+		    margin-right:auto;
+		}
+		.row {
+			margin-top: 69px;
 		}
 	</style>
   </head>
   <body>
-	<button id="trends_button">Trends</button><br>
-	<img src="/static/spinner.gif" id="spinner1" style="display:none">
-	<table id="trends_table"></table>
-	<button id="search_button" style="display:none"> Search Trends</button><br>
-	<img src="/static/spinner.gif" id="spinner2" style="display:none">
-	<table id="multiwords_table"></table>
-
-
+  	<div class="jumbotron">
+	  <h1>Multiword detection</h1>
+	  <p>Computational approach of multi word detection using tweets</p>
+	</div>
+	<div class="row">
+		<div class="col-md-6">
+			<button type="button" class="btn btn-primary" id="trends_button">Trends</button><br>
+			<img src="/static/spinner.gif" id="spinner1" style="display:none">
+		</div>
+		<div class="col-md-6">
+			<form class="form-horizontal" id="upload-file" method="post" enctype="multipart/form-data">
+				<div class="form-group">
+					<div class="fileinput fileinput-new" data-provides="fileinput">
+					  <span class="btn btn-default btn-file"><span class="fileinput-new">Select file</span><span class="fileinput-exists">Change</span><input type="file" name="file"></span>
+					  <span class="fileinput-filename"></span>
+					  <a href="#" class="close fileinput-exists" data-dismiss="fileinput" style="float: none">&times;</a>
+					</div>
+				</div>
+				<div class="form-group">
+			        <button id="upload-file-btn" type="button" class="btn btn-default">Upload</button>
+			    </div>
+			</form>
+		</div>
+	</div>
+	<div class="row">
+		<table id="trends_table"></table>
+		<button class="btn btn-primary" id="search_button" style="display:none"> Search Trends</button><br>
+		<img src="/static/spinner.gif" id="spinner2" style="display:none">
+		<table id="multiwords_table"></table>
+	</div>
 
 	<!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
 	<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js"></script>
 	<!-- Include all compiled plugins (below), or include individual files as needed -->
 	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js"></script>
+	<script src="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js"></script>
 
 	<script>
+		function multiwordsSuccess(data) {
+			$('#multiwords_table').html('')
+			var multiwords = JSON.parse(data)
+			window.multiwords = multiwords
+			$.each(multiwords, function(key, val) {
+				var $tr = $('<tr>').append(
+					$('<td>').text(key), $('<td>').text(val)
+				)
+				$('#multiwords_table').append($tr)
+			})
+			$('#spinner2').css('display', 'none')
+		}
+
+		$(function() {
+			$('#upload-file-btn').click(function() {
+				var form_data = new FormData($('#upload-file')[0]);
+		        $.ajax({
+		            type: 'POST',
+		            url: '/search_trends',
+		            data: form_data,
+		            contentType: false,
+		            cache: false,
+		            processData: false,
+		            async: false,
+		            success: multiwordsSuccess,
+		        })
+		    })
+		})
+
 		$("#trends_button").click(function() {
 			$('#trends_table').html('')
 			$('#search_button').css('display', 'none')
@@ -62,18 +118,7 @@
 
 		$("#search_button").click(function() {
 			$('#spinner2').css('display', 'inline')
-			$.post('/search_trends', {'data': JSON.stringify(trends)}, function(data) {
-				$('#multiwords_table').html('')
-				var multiwords = JSON.parse(data)
-				window.multiwords = multiwords
-				$.each(multiwords, function(key, val) {
-					var $tr = $('<tr>').append(
-						$('<td>').text(key), $('<td>').text(val)
-					)
-					$('#multiwords_table').append($tr)
-				})
-				$('#spinner2').css('display', 'none')
-			})
+			$.post('/search_trends', {'data': JSON.stringify(trends)}, multiwordsSuccess)
 		})
 	</script>
   </body>

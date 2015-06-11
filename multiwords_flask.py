@@ -9,7 +9,11 @@ import collections
 import subprocess
 import json
 
+UPLOAD_FOLDER = './'
+ALLOWED_EXTENSIONS = set(['txt'])
+
 app = Flask(__name__)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/')
 def home():
@@ -35,26 +39,31 @@ def get_trends():
 
 @app.route('/search_trends', methods=['GET', 'POST'])
 def search_trends():
-    keys = []
-    with open('keys.txt') as stream:
-        keys = [line.strip() for line in stream]
-    [consumer_key, consumer_secret, access_token, access_token_secret] = keys
-
-    auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
-    auth.set_access_token(access_token, access_token_secret)
-    api = tweepy.API(auth)
-
-    trends_querys = request.form['data']
-    print(trends_querys)
-
-    trends_querys = json.loads(trends_querys)
     tweets = []
-    max_tweets = 200
-    for i, query in enumerate(trends_querys):
-        print("Getting trend {0}/{1}".format(i+1, len(trends_querys)))
-        tweets += [status.text for status in tweepy.Cursor(api.search, q=query, 
-            language='en').items(max_tweets)]
-        
+    if request.files.get('file'):
+        tweets = [x.decode().strip() for x in request.files['file'].stream.readlines()]
+    else:
+        keys = []
+        with open('keys.txt') as stream:
+            keys = [line.strip() for line in stream]
+        [consumer_key, consumer_secret, access_token, access_token_secret] = keys
+
+        auth = tweepy.OAuthHandler(consumer_key, consumer_secret)
+        auth.set_access_token(access_token, access_token_secret)
+        api = tweepy.API(auth)
+
+        trends_querys = request.form['data']
+        print(trends_querys)
+
+        trends_querys = json.loads(trends_querys)
+        tweets = []
+        max_tweets = 200
+        for i, query in enumerate(trends_querys):
+            print("Getting trend {0}/{1}".format(i+1, len(trends_querys)))
+            tweets += [status.text for status in tweepy.Cursor(api.search, q=query, 
+                language='en').items(max_tweets)]
+    
+
     with open('tweets.txt', 'w') as stream:
         stream.write("\n".join(tweets))
 
@@ -156,7 +165,7 @@ def search_trends():
         for word in words:
             if word in dict_word:
                 score -= dict_word[word] - val
-        if score > 5:
+        if score > 0:
             dict_multiword_score[key] = score
 
     ordered_dict_multiword_score = collections.OrderedDict(
