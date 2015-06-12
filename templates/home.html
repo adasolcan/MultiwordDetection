@@ -8,11 +8,12 @@
     <title>Multiwords</title>
 
     <!-- Bootstrap -->
-    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"
-     rel="stylesheet">
-    <link rel="stylesheet" href="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css">
+    <link 
+    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"
+    rel="stylesheet">
+    <link rel="stylesheet" 
+    href="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css">
 
-    
     <style>
         body {
             margin: 0 auto;
@@ -27,18 +28,23 @@
             margin-top: 10px;
         }
     </style>
+
     </head>
+
     <body>
+
     <div class="jumbotron">
       <h1>Multiword detection</h1>
       <p>Computational approach of multi word detection using tweets</p>
     </div>
+
     <div class="row">
         <div class="col-md-6">
             <button type="button" class="btn btn-default" id="trends_button">
                 Get Twitter trends</button><br>
             <img src="/static/spinner.gif" id="spinner1" style="display:none">
         </div>
+
         <div class="col-md-6">
             <form class="form-horizontal" id="upload-file" method="post"
              enctype="multipart/form-data">
@@ -49,6 +55,7 @@
                             <span class="fileinput-exists">Change</span>
                             <input type="file" name="file">
                         </span>
+
                         <span class="fileinput-filename"></span>
                         <a href="#" class="close fileinput-exists" 
                         data-dismiss="fileinput" style="float: none">
@@ -56,6 +63,7 @@
                         </a>
                     </div>
                 </div>
+
                 <div class="form-group">
                     <button id="upload-file-btn" type="button" class="btn btn-default">
                         Upload & find multiwords
@@ -65,35 +73,37 @@
             </form>
         </div>
     </div>
+
     <div class="row">
         <table id="trends_table"></table>
-        <button class="btn btn-primary" id="search_button" style="display:none">
+        <button class="btn btn-default" id="search_button" style="display:none">
             Find multiwords
         </button><br>
         <img src="/static/spinner.gif" id="spinner3" style="display:none">
         <table id="multiwords_table"></table>
     </div>
 
-    <!-- jQuery (necessary for Bootstrap's JavaScript plugins) -->
     <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js">
     </script>
-    <!-- Include all compiled plugins (below), or include individual files as needed -->
     <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js">
     </script>
     <script src="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js">
     </script>
 
     <script>
+
         function multiwordsSuccess(data) {
             $('#multiwords_table').html('')
             var multiwords = JSON.parse(data)
             window.multiwords = multiwords
+
             $.each(multiwords, function(key, val) {
                 var $tr = $('<tr>').append(
                     $('<td>').text(key), $('<td>').text(val)
                 )
                 $('#multiwords_table').append($tr)
             })
+
             $('#spinner2').css('display', 'none')
             $('#spinner3').css('display', 'none')
         }
@@ -103,7 +113,9 @@
             $('#trends_table').html('')
             $('#multiwords_table').html('')
             $('#search_button').css('display', 'none')
+
             var form_data = new FormData($('#upload-file')[0]);
+
             $.ajax({
                 type: 'POST',
                 url: '/search_trends',
@@ -119,6 +131,7 @@
             $('#multiwords_table').html('')
             $('#search_button').css('display', 'none')
             $('#spinner1').css('display', 'inline')
+
             $.get("/trends", function(data) {
                 var trends = JSON.parse(data)
                 window.trends = trends
@@ -138,6 +151,8 @@
             $.post('/search_trends', {'data': JSON.stringify(trends)}, 
                 multiwordsSuccess)
         })
+
     </script>
+    
   </body>
 </html>
