@@ -159,7 +159,7 @@ def search_trends():
         for word in words:
             if word in dict_word:
                 score -= dict_word[word] - val
-            if score > 1:
+            if score > 0:
                 lang = ''
                 try:
                     lang = detect(key)
