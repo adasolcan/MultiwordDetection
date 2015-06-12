@@ -41,7 +41,8 @@ def get_trends():
 def search_trends():
     tweets = []
     if request.files.get('file'):
-        tweets = [x.decode().strip() for x in request.files['file'].stream.readlines()]
+        tweets = [x.decode().strip() 
+                    for x in request.files['file'].stream.readlines()]
         tweets_file = 'tweets_upload.txt'
     else:
         keys = []
@@ -54,16 +55,15 @@ def search_trends():
         api = tweepy.API(auth)
 
         trends_querys = request.form['data']
-        print(trends_querys)
 
         trends_querys = json.loads(trends_querys)
         tweets = []
-        max_tweets = 50
+        max_tweets = 20
         try:
             for i, query in enumerate(trends_querys):
                 print("Getting trend {0}/{1}".format(i+1, len(trends_querys)))
-                tweets += [status.text for status in tweepy.Cursor(api.search, q=query, 
-                    language='en').items(max_tweets)]
+                tweets += [status.text for status in tweepy.Cursor(api.search,
+                    q=query, language='en').items(max_tweets)]
         except:
             tweets = ''
 
@@ -85,26 +85,21 @@ def search_trends():
         token_list.append(token_list_temp[i:i+2])
         i+=3
 
-    multiword_patterns = [["N", "V"], ["^", "^"], ["N", "^"], ["^", "N"],
-                    ["N", "N"],
+    multiword_patterns = [["^", "^"], ["N", "^"], ["^", "N"], ["N", "N"],
                     ["A", "N"], ["A", "^"], ["V", "N"], ["V", "^"], ["V", "T"],
-                    ["N", "V"], ["^", "V"], ["R" , "V"],
+                    ["R" , "V"],
                     ["V", "T", "T"], ["V", "T", "P"], ["V", "D", "N"],
-                    ["V", "D", "^"],
-                    ["N", "O", "N"], ["^", "O", "N"], ["N", "O", "^"],
-                    ["^", "O", "^"],
-                    ["D", "D", "N"], ["D", "D", "^"], ["V", "D", "N"],
-                    ["V", "D", "^"], ["V", "T", "P"],
-                    ["N", "N", "N"], ["N", "N", "^"], ["N", "^", "N"],
-                    ["^", "N", "N"], ["N", "^", "^"], ["^", "N", "^"],
-                    ["^", "^", "N"], ["^", "^", "^"],
+                    ["V", "D", "^"], ["N", "O", "N"], ["^", "O", "N"],
+                    ["N", "O", "^"], ["^", "O", "^"], ["D", "D", "N"],
+                    ["D", "D", "^"], ["V", "D", "N"], ["V", "D", "^"],
+                    ["V", "T", "P"], ["N", "N", "N"], ["N", "N", "^"],
+                    ["N", "^", "N"], ["^", "N", "N"], ["N", "^", "^"],
+                    ["^", "N", "^"], ["^", "^", "N"], ["^", "^", "^"],
                     ["A", "N", "N"], ["A", "N", "^"], ["A", "^", "N"],
-                    ["A", "^", "^"],
-                    ["N", "A", "N"], ["^", "A", "^"], ["N", "A","^"],
-                    ["^", "A", "N"],
-                    ["A", "A", "N"], ["A", "A", "^"],
-                    ["N", "P", "N"], ["^", "P", "N"], ["N", "P", "^"],
-                    ["^", "P", "^"],
+                    ["A", "^", "^"], ["N", "A", "N"], ["^", "A", "^"],
+                    ["N", "A", "^"], ["^", "A", "N"], ["A", "A", "N"],
+                    ["A", "A", "^"], ["N", "P", "N"], ["^", "P", "N"],
+                    ["N", "P", "^"], ["^", "P", "^"], 
                     ["N", "P", "A", "N"], ["^", "P", "A", "N"],
                     ["N", "P", "A", "^"], ["^", "P", "A", "^"],
                     ["N", "P", "D", "N"], ["^", "P", "D", "N"],
@@ -126,12 +121,7 @@ def search_trends():
         if len(group) == 2:
             tweet = group[0]
             tag = group[1]
-            lang = ''
-            try:
-                lang = detect(tweet)
-            except: 
-                pass
-        if (tweet1 != tweet) and (lang == 'en'):
+        if tweet1 != tweet:
             words = tweet.split()
             tags = tag.split()
             word1 = ""; word2 = ""; word3 = ""
@@ -169,8 +159,14 @@ def search_trends():
         for word in words:
             if word in dict_word:
                 score -= dict_word[word] - val
-        if score > 0:
-            dict_multiword_score[key] = score
+            if score > 1:
+                lang = ''
+                try:
+                    lang = detect(key)
+                except: 
+                    pass
+                if lang == 'en':
+                    dict_multiword_score[key] = score
 
     ordered_dict_multiword_score = collections.OrderedDict(
         sorted(dict_multiword_score.items(), key=lambda t: t[1], reverse=True))
