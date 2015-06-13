@@ -102,6 +102,7 @@ def search_trends():
     dict_word = collections.defaultdict(int)
 
     last_tweet = ''
+    words_total = 0
     for group in token_list:
         if len(group) == 2:
             [tweet, tag] = group
