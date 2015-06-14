@@ -155,16 +155,16 @@ def search_trends():
             if word in dict_word:
                 score -= dict_word[word] - val
 
-            if score > 0:
-                lang = ''
+        if score > 0:
+            lang = ''
 
-                try:
-                    lang = detect(key)
-                except:
-                    pass
+            try:
+                lang = detect(key)
+            except:
+                pass
 
-                if lang == 'en':
-                    dict_multiword_score[key] = score
+            if lang == 'en':
+                dict_multiword_score[key] = score
 
     ordered_dict_multiword_score = collections.OrderedDict(
         sorted(dict_multiword_score.items(), key=lambda t: t[1], reverse=True))
