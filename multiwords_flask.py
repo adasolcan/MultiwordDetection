@@ -3,6 +3,8 @@ import re
 import collections
 import subprocess
 import json
+import time
+import datetime
 
 from flask import Flask, render_template, request
 from langdetect import detect
@@ -45,6 +47,8 @@ def search_trends():
                   for x in request.files['file'].stream.readlines()]
         tweets_file = 'tweets_upload.txt'
     else:
+        timestamp = datetime.datetime.fromtimestamp(
+            time.time()).strftime('%Y%m%d%H%M%S')
         tweets_file = 'tweets_trends.txt'
         api = get_twitter_api()
         trends_querys = json.loads(request.form['data'])
@@ -59,10 +63,15 @@ def search_trends():
                                          q=query, ).items(max_tweets)]
         except:
             tweets = None
+            tweets_file = 'tweets_trends.txt'
 
     if tweets:
         with open(tweets_file, 'w') as stream:
             stream.write("\n".join(tweets))
+        if timestamp:
+            p = subprocess.Popen(["cp", tweets_file,
+                                  "tweet_trends"+timestamp+".txt"],
+                                stdout=subprocess.PIPE)
 
     p = subprocess.Popen(["../ark-tweet-nlp-0.3.2/runTagger.sh",
                           "--no-confidence", "--input-format", "text",
