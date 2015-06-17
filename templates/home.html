@@ -1,165 +1,125 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
-    <meta name="viewport" content="width=device-width, initial-scale=1">
-    
-    <title>Multiwords</title>
-
-    <!-- Bootstrap -->
-    <link 
-    href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/css/bootstrap.min.css"
-    rel="stylesheet">
-    <link rel="stylesheet" 
-    href="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/css/jasny-bootstrap.min.css">
-
-    <style>
-        body {
-            margin: 0 auto;
-            width: 800px;
-            text-align: center;
-        }
-        table {
-            margin-left:auto; 
-            margin-right:auto;
-        }
-        .row {
-            margin-top: 10px;
-        }
-    </style>
-
-    </head>
-
-    <body>
-
+{% extends "layout.html" %}
+{% block content %}
     <div class="jumbotron">
-      <h1>Multiword detection</h1>
-      <p>Computational approach of multi word detection using tweets.
-        You can either get the current trends from Twitter, and tweets that talk 
-        about the trends, or you can upload a file which contains one tweet per 
-        line. For either option of input, the app will give you a list of 
-        multiwords and their scores.</p>
+    <h1>Multiword detection</h1>
+    <p>Computational approach of multi word detection using tweets.
+       You can either get the current trends from Twitter, and tweets that talk 
+       about the trends, or you can upload a file which contains one tweet per 
+       line. For either option of input, the app will give you a list of 
+       multiwords and their scores.</p>
+    <p>You can find the files that contain the tweets returned by the app 
+       <a href="/tweets" target="_blank"> here </a></p>
     </div>
 
     <div class="row">
-        <div class="col-md-6">
-            <button type="button" class="btn btn-default" id="trends_button">
-                Get Twitter trends</button><br>
-            <img src="/static/spinner.gif" id="spinner1" style="display:none">
-        </div>
+    <div class="col-md-6">
+        <button type="button" class="btn btn-default" id="trends_button">
+            Get Twitter trends</button><br>
+        <img src="/static/spinner.gif" id="spinner1" style="display:none">
+    </div>
 
-        <div class="col-md-6">
-            <form class="form-horizontal" id="upload-file" method="post"
-             enctype="multipart/form-data">
-                <div class="form-group">
-                    <div class="fileinput fileinput-new" 
-                    data-provides="fileinput">
-                        <span class="btn btn-default btn-file">
-                            <span class="fileinput-new">Select file</span>
-                            <span class="fileinput-exists">Change</span>
-                            <input type="file" name="file">
-                        </span>
+    <div class="col-md-6">
+        <form class="form-horizontal" id="upload-file" method="post"
+         enctype="multipart/form-data">
+            <div class="form-group">
+                <div class="fileinput fileinput-new" 
+                data-provides="fileinput">
+                    <span class="btn btn-default btn-file">
+                        <span class="fileinput-new">Select file</span>
+                        <span class="fileinput-exists">Change</span>
+                        <input type="file" name="file">
+                    </span>
 
-                        <span class="fileinput-filename"></span>
-                        <a href="#" class="close fileinput-exists" 
-                        data-dismiss="fileinput" style="float: none">
-                            &times;
-                        </a>
-                    </div>
+                    <span class="fileinput-filename"></span>
+                    <a href="#" class="close fileinput-exists" 
+                    data-dismiss="fileinput" style="float: none">
+                        &times;
+                    </a>
                 </div>
+            </div>
 
-                <div class="form-group">
-                    <button id="upload-file-btn" type="button" 
-                    class="btn btn-default">
-                        Upload & find multiwords
-                    </button>
-                    <img src="/static/spinner.gif" id="spinner2" 
-                    style="display:none">
-                </div>
-            </form>
-        </div>
+            <div class="form-group">
+                <button id="upload-file-btn" type="button" 
+                class="btn btn-default">
+                    Upload & find multiwords
+                </button>
+                <img src="/static/spinner.gif" id="spinner2" 
+                style="display:none">
+            </div>
+        </form>
+    </div>
     </div>
 
     <div class="row">
-        <table id="trends_table"></table>
-        <button class="btn btn-default" id="search_button" style="display:none">
-            Find multiwords
-        </button><br>
-        <img src="/static/spinner.gif" id="spinner3" style="display:none">
-        <table id="multiwords_table"></table>
+    <table id="trends_table"></table>
+    <button class="btn btn-default" id="search_button" style="display:none">
+        Find multiwords
+    </button><br>
+    <img src="/static/spinner.gif" id="spinner3" style="display:none">
+    <table id="multiwords_table"></table>
     </div>
-
-    <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.2/jquery.min.js">
-    </script>
-    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.4/js/bootstrap.min.js">
-    </script>
-    <script src="//cdnjs.cloudflare.com/ajax/libs/jasny-bootstrap/3.1.3/js/jasny-bootstrap.min.js">
-    </script>
 
     <script>
 
-        function multiwordsSuccess(data) {
-            $('#multiwords_table').html('')
-            var multiwords = JSON.parse(data)
-            window.multiwords = multiwords
+    function multiwordsSuccess(data) {
+        $('#multiwords_table').html('')
+        var multiwords = JSON.parse(data)
+        window.multiwords = multiwords
 
-            $.each(multiwords, function(key, val) {
+        $.each(multiwords, function(key, val) {
+            var $tr = $('<tr>').append(
+                $('<td>').text(key), $('<td>').text(val)
+            )
+            $('#multiwords_table').append($tr)
+        })
+
+        $('#spinner2').css('display', 'none')
+        $('#spinner3').css('display', 'none')
+    }
+
+    $('#upload-file-btn').click(function() {
+        $('#spinner2').css('display', 'inline')
+        $('#trends_table').html('')
+        $('#multiwords_table').html('')
+        $('#search_button').css('display', 'none')
+
+        var form_data = new FormData($('#upload-file')[0]);
+
+        $.ajax({
+            type: 'POST',
+            url: '/search_trends',
+            data: form_data,
+            success: multiwordsSuccess,
+            contentType: false,
+            processData: false,                
+        })
+    })
+
+    $("#trends_button").click(function() {
+        $('#trends_table').html('')
+        $('#multiwords_table').html('')
+        $('#search_button').css('display', 'none')
+        $('#spinner1').css('display', 'inline')
+
+        $.get("/trends", function(data) {
+            var trends = JSON.parse(data)
+            window.trends = trends
+            $.each(trends, function(i, item) {
                 var $tr = $('<tr>').append(
-                    $('<td>').text(key), $('<td>').text(val)
+                    $('<td>').text(item)
                 )
-                $('#multiwords_table').append($tr)
+                $('#trends_table').append($tr)
             })
-
-            $('#spinner2').css('display', 'none')
-            $('#spinner3').css('display', 'none')
-        }
-
-        $('#upload-file-btn').click(function() {
-            $('#spinner2').css('display', 'inline')
-            $('#trends_table').html('')
-            $('#multiwords_table').html('')
-            $('#search_button').css('display', 'none')
-
-            var form_data = new FormData($('#upload-file')[0]);
-
-            $.ajax({
-                type: 'POST',
-                url: '/search_trends',
-                data: form_data,
-                success: multiwordsSuccess,
-                contentType: false,
-                processData: false,                
-            })
+            $('#search_button').css('display', 'inline')
+            $('#spinner1').css('display', 'none')
         })
+    })
 
-        $("#trends_button").click(function() {
-            $('#trends_table').html('')
-            $('#multiwords_table').html('')
-            $('#search_button').css('display', 'none')
-            $('#spinner1').css('display', 'inline')
-
-            $.get("/trends", function(data) {
-                var trends = JSON.parse(data)
-                window.trends = trends
-                $.each(trends, function(i, item) {
-                    var $tr = $('<tr>').append(
-                        $('<td>').text(item)
-                    )
-                    $('#trends_table').append($tr)
-                })
-                $('#search_button').css('display', 'inline')
-                $('#spinner1').css('display', 'none')
-            })
-        })
-
-        $("#search_button").click(function() {
-            $('#spinner3').css('display', 'inline')
-            $.post('/search_trends', {'data': JSON.stringify(trends)}, 
-                multiwordsSuccess)
-        })
+    $("#search_button").click(function() {
+        $('#spinner3').css('display', 'inline')
+        $.post('/search_trends', {'data': JSON.stringify(trends)}, 
+            multiwordsSuccess)
+    })
 
     </script>
-
-  </body>
-</html>
+{% endblock %}

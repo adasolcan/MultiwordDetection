@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+{% block content %}
+
+	<h1>Files containing tweets</h1>
+	<ul>
+		{% for file_name in file_names %}
+			{% if file_name != ".gitignore" %}
+				<li style='list-style-type: none'>
+					<a href="/static/tweets/{{file_name}}">
+						{{file_name}}
+					</a>
+				</li>
+			{% endif %}
+		{% endfor %}
+	</ul>
+{% endblock %}
