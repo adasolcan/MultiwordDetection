@@ -10,7 +10,7 @@ from flask import Flask, render_template, request
 from langdetect import detect
 
 app = Flask(__name__)
-app.config['UPLOAD_FOLDER'] = './'
+app.config['UPLOAD_FOLDER'] = './static/tweets/'
 
 
 def get_twitter_api():
