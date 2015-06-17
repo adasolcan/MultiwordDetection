@@ -5,6 +5,7 @@ import subprocess
 import json
 import time
 import datetime
+import os
 
 from flask import Flask, render_template, request
 from langdetect import detect
@@ -27,6 +28,15 @@ def get_twitter_api():
 @app.route('/')
 def home():
     return render_template('home.html')
+
+
+@app.route('/tweets')
+def get_tweet_files():
+    file_names = []
+    for root, dirs, files in os.walk(app.config['UPLOAD_FOLDER'],
+                                     topdown=True):
+        file_names += files
+    return render_template('tweets.html', file_names=file_names)
 
 
 @app.route('/trends')
@@ -53,7 +63,6 @@ def search_trends():
         api = get_twitter_api()
         trends_querys = json.loads(request.form['data'])
 
-        tweets = []
         max_tweets = 20
         try:
             for i, query in enumerate(trends_querys):
@@ -70,8 +79,9 @@ def search_trends():
             stream.write("\n".join(tweets))
         if timestamp:
             p = subprocess.Popen(["cp", tweets_file,
-                                  "tweet_trends"+timestamp+".txt"],
-                                stdout=subprocess.PIPE)
+                                  app.config['UPLOAD_FOLDER'] +
+                                  "tweet_trends" + timestamp+".txt"],
+                                 stdout=subprocess.PIPE)
 
     p = subprocess.Popen(["../ark-tweet-nlp-0.3.2/runTagger.sh",
                           "--no-confidence", "--input-format", "text",
