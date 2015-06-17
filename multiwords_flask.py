@@ -52,6 +52,7 @@ def get_trends():
 @app.route('/search_trends', methods=['GET', 'POST'])
 def search_trends():
     tweets = []
+    timestamp = ''
     if request.files.get('file'):
         tweets = [x.decode().strip()
                   for x in request.files['file'].stream.readlines()]
